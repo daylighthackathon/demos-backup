@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Daylight: každé tvrzení na světlo</title>
+<style>
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+--bg:#f6f2f8;--surf:#fff;--ink:#231a33;--mute:#6a5f7d;--line:#ddd3e8;--acc:#5b2a86;--ok:#2f7d5b;--warn:#b7791f;--bad:#b3261e;--unk:#6a5f7d}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#150f27;--surf:#211938;--ink:#ece6f6;--mute:#a79bc0;--line:#3a2f57;--acc:#c4a0f5;--ok:#5fc29a;--warn:#f0b95b;--bad:#ff8a80;--unk:#a79bc0}}
+:root[data-theme="dark"]{--bg:#150f27;--surf:#211938;--ink:#ece6f6;--mute:#a79bc0;--line:#3a2f57;--acc:#c4a0f5;--ok:#5fc29a;--warn:#f0b95b;--bad:#ff8a80;--unk:#a79bc0}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*,*:before,*:after{box-sizing:inherit}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 system-ui,-apple-system,"Segoe UI",sans-serif}
+h1,h2,h3{font-family:Georgia,"Times New Roman",serif;line-height:1.15;margin:0}
+.sky{--p:0;color:#fff;padding:44px 16px 56px;background:linear-gradient(180deg,#1b1433 0%,#4a2a6b 40%,#c0653c 72%,#f2a65a 100%);background-size:100% 300%;background-position:0 calc(var(--p)*100%);transition:background-position 1.2s ease}
+.wrap{max-width:820px;margin:0 auto}
+.sky h1{font-size:clamp(2.4rem,9vw,4.2rem);letter-spacing:-.02em}
+.sky p{max-width:56ch;margin:10px 0 0;opacity:.92}
+main{max-width:820px;margin:-28px auto 60px;padding:0 16px}
+.card{background:var(--surf);border:1px solid var(--line);border-radius:10px;padding:18px;margin-bottom:16px}
+label{display:block;font-weight:600;margin:12px 0 4px;font-size:14px}
+input,textarea,select{width:100%;font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:9px 10px}
+textarea{min-height:140px;resize:vertical}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:600px){.row{grid-template-columns:1fr}}
+button{font:inherit;font-weight:600;border-radius:6px;padding:10px 16px;cursor:pointer;border:1px solid var(--acc)}
+.go{background:var(--acc);color:#fff}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .go{color:#150f27}}
+.ghost{background:none;color:var(--acc)}
+button:disabled{opacity:.5;cursor:default}
+button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible,summary:focus-visible{outline:2px solid #f2a65a;outline-offset:2px}
+.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
+.mode{display:inline-block;font-size:13px;border:1px solid var(--line);border-radius:99px;padding:2px 10px;color:var(--mute);margin-top:12px}
+.steps{list-style:none;padding:0;margin:8px 0 0}
+.steps li{display:flex;gap:10px;padding:6px 0;color:var(--mute)}
+.steps li.on{color:var(--ink);font-weight:600}
+.steps li.done{color:var(--ink)}
+.steps .ic{width:22px;text-align:center}
+.meter{height:10px;background:var(--line);border-radius:6px;overflow:hidden;margin:6px 0}
+.meter i{display:block;height:100%;background:var(--ok);width:0;transition:width 1s}
+.claim{border-top:1px solid var(--line);padding:10px 0}
+.claim summary{cursor:pointer;display:flex;gap:10px;align-items:flex-start;list-style:none}
+.claim summary::-webkit-details-marker{display:none}
+.badge{flex:none;font-size:13px;font-weight:700;border-radius:99px;padding:1px 10px;border:1px solid currentColor;white-space:nowrap}
+.verified{color:var(--ok)}.partial{color:var(--warn)}.contradicted{color:var(--bad)}.unverifiable{color:var(--unk)}
+.ev{margin:8px 0 0 4px;padding-left:12px;border-left:3px solid var(--line);font-size:14px;color:var(--mute)}
+.ev a{color:var(--acc);word-break:break-all}
+.sum{display:flex;gap:18px;flex-wrap:wrap;margin:8px 0}
+.sum div{font-family:Georgia,serif;font-size:1.6rem}
+.sum span{display:block;font:13px system-ui;color:var(--mute)}
+ul.plain{padding-left:20px;margin:6px 0}
+.err{color:var(--bad);font-weight:600}
+.hide{display:none}
+</style>
+</head>
+<body>
+<header class="sky" id="sky">
+<div class="wrap">
+<h1>Daylight</h1>
+<p>Nahrajte CV kandidáta. Agent prohledá internet a ke každému tvrzení řekne, jestli je ověřené, a ukáže důkaz. Co se ověřit nedá, neschovává.</p>
+</div>
+</header>
+
+<main>
+<form class="card" id="form" autocomplete="off">
+<div class="row">
+<div><label for="name">Jméno kandidáta</label><input id="name" required placeholder="Jana Nováková"></div>
+<div><label for="ctx">Firma nebo kontext</label><input id="ctx" placeholder="Škoda Auto, Praha"></div>
+</div>
+<label for="goal">Co chcete vědět?</label>
+<input id="goal" placeholder="Ověř zkušenosti s Pythonem a vedením týmu">
+<label for="cv">Text CV</label>
+<textarea id="cv" required placeholder="Vložte text životopisu"></textarea>
+<div class="actions">
+<button class="go" id="run" type="submit">Prověřit kandidáta</button>
+<button class="ghost" id="demo" type="button">Vyplnit ukázku</button>
+</div>
+<span class="mode" id="mode"></span>
+</form>
+
+<section class="card hide" id="progress" aria-live="polite">
+<h3>Agent pracuje</h3>
+<ul class="steps" id="steps"></ul>
+<p id="timer" style="color:var(--mute);font-size:14px;margin:8px 0 0"></p>
+<p class="err hide" id="err"></p>
+</section>
+
+<section class="hide" id="report"></section>
+</main>
+
+<script>
+// Sem vložte URL z Make.com (Custom webhook scénáře A a B). Když jsou prázdné, běží DEMO režim.
+const WEBHOOK_START = "";
+const WEBHOOK_RESULT = "";
+
+const STEPS=["Čtu CV a vybírám tvrzení","Hledám na internetu","Ověřuji, že jde o stejného člověka","Porovnávám tvrzení s důkazy","Skládám report"];
+const LABEL={verified:"Ověřeno",partial:"Částečně",contradicted:"Rozpor",unverifiable:"Neověřitelné"};
+const ICON={verified:"✅",partial:"⚠️",contradicted:"❌",unverifiable:"❔"};
+const $=id=>document.getElementById(id);
+const live=!!(WEBHOOK_START&&WEBHOOK_RESULT);
+$("mode").textContent=live?"Živý režim: napojeno na Make.com":"DEMO režim: výsledek je ukázkový a simulovaný";
+
+const MOCK={identityConfidence:0.86,summary:"Kandidátka Jana Nováková (fiktivní příklad). Většina profesní historie souhlasí s veřejnými zdroji. Jedno tvrzení o vedení týmu se ověřit nepodařilo a jedno odporuje nalezenému záznamu.",
+claims:[
+{text:"5 let jako Python vývojářka ve společnosti Alfa s.r.o.",status:"verified",confidence:0.9,evidence:[{url:"https://example.org/alfa-tym",snippet:"Jana Nováková, Senior Python Developer, Alfa s.r.o. (ukázkový záznam)"}],note:""},
+{text:"Absolventka ČVUT FEL, 2016",status:"partial",confidence:0.6,evidence:[{url:"https://example.org/absolventi",snippet:"J. Nováková v seznamu absolventů 2016, bez uvedení oboru (ukázkový záznam)"}],note:"Škola souhlasí, obor ne"},
+{text:"Vedla tým 8 lidí",status:"unverifiable",confidence:0.2,evidence:[],note:"V nalezených zdrojích o velikosti týmu nic není"},
+{text:"Pracovala 2 roky ve společnosti Beta a.s.",status:"contradicted",confidence:0.7,evidence:[{url:"https://example.org/beta-historie",snippet:"Záznam uvádí působení 2018 až 2019, tedy 1 rok (ukázkový záznam)"}],note:"Délka se liší od CV"}],
+flags:["Rozdíl v délce působení u společnosti Beta a.s."],
+interviewQuestions:["Kolik lidí jste skutečně vedla a v jakém období?","Jak dlouho jste byla u společnosti Beta a proč jste odešla?","Jaký obor jste vystudovala na ČVUT?","Který projekt v Alfě byl nejnáročnější?","Co byste dnes udělala jinak?"],
+limitations:["Hledání pokrývá jen veřejně dostupné zdroje","Neověřitelné neznamená nepravdivé","Shoda identity je odhad, ne jistota","Výstup je podklad pro člověka, nerozhoduje o kandidátovi"]};
+
+$("demo").onclick=()=>{$("name").value="Jana Nováková";$("ctx").value="Alfa s.r.o., Praha";$("goal").value="Ověř zkušenosti s Pythonem a vedením týmu";
+$("cv").value="Jana Nováková\nSenior Python vývojářka\n- 2019–2024 Alfa s.r.o., Python vývojářka (5 let), vedla tým 8 lidí\n- 2018–2020 Beta a.s., 2 roky\n- ČVUT FEL, absolventka 2016\nDovednosti: Python, Django, SQL, Docker"};
+
+function setP(v){$("sky").style.setProperty("--p",v)}
+function renderSteps(n,allDone){$("steps").innerHTML=STEPS.map((s,i)=>{const c=allDone||i<n?"done":i===n?"on":"";const ic=allDone||i<n?"✓":i===n?"…":"";return `<li class="${c}"><span class="ic">${ic}</span>${s}</li>`}).join("")}
+const esc=s=>String(s==null?"":s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const safeUrl=u=>/^https?:\/\//i.test(u)?u:"#";
+
+function show(r){
+ const cl=r.claims||[];const n=k=>cl.filter(c=>c.status===k).length;
+ let h=`<div class="card"><h2>Report</h2><div class="sum"><div>${Math.round((r.identityConfidence||0)*100)} %<span>shoda identity s CV</span></div><div>${n("verified")}<span>ověřeno</span></div><div>${n("partial")}<span>částečně</span></div><div>${n("contradicted")}<span>rozpor</span></div><div>${n("unverifiable")}<span>neověřitelné</span></div></div>
+ <div class="meter" aria-hidden="true"><i id="m"></i></div><p>${esc(r.summary)}</p></div>`;
+ h+=`<div class="card"><h3>Tvrzení z CV</h3><p style="color:var(--mute);font-size:14px;margin:4px 0">Kliknutím rozbalíte důkaz.</p>`+cl.map(c=>{
+  const ev=(c.evidence||[]).map(e=>`<div>“${esc(e.snippet)}”<br><a href="${esc(safeUrl(e.url))}" target="_blank" rel="noopener noreferrer">${esc(e.url)}</a></div>`).join("")||"Bez nalezeného důkazu.";
+  return `<details class="claim"><summary><span class="badge ${esc(c.status)}">${ICON[c.status]||""} ${LABEL[c.status]||esc(c.status)}</span><span>${esc(c.text)}</span></summary><div class="ev">${ev}${c.note?`<div><b>Poznámka:</b> ${esc(c.note)}</div>`:""}</div></details>`}).join("")+`</div>`;
+ if((r.flags||[]).length)h+=`<div class="card"><h3>Na co si dát pozor</h3><ul class="plain">${r.flags.map(f=>`<li>${esc(f)}</li>`).join("")}</ul></div>`;
+ h+=`<div class="card"><h3>Otázky k pohovoru</h3><ol class="plain">${(r.interviewQuestions||[]).map(q=>`<li>${esc(q)}</li>`).join("")}</ol></div>
+ <div class="card"><h3>Limity tohoto reportu</h3><ul class="plain">${(r.limitations||[]).map(q=>`<li>${esc(q)}</li>`).join("")}</ul></div>`;
+ $("report").innerHTML=h;$("report").classList.remove("hide");
+ requestAnimationFrame(()=>{const m=$("m");if(m)m.style.width=Math.round(cl.length?n("verified")/cl.length*100:0)+"%"});
+ $("report").scrollIntoView({behavior:matchMedia("(prefers-reduced-motion:reduce)").matches?"auto":"smooth"});
+}
+
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+async function runDemo(){
+ for(let i=0;i<STEPS.length;i++){renderSteps(i);setP((i+1)/(STEPS.length+1));await sleep(1100)}
+}
+async function runLive(){
+ const id=(crypto.randomUUID?crypto.randomUUID():String(Date.now()));
+ const body=new URLSearchParams({id,name:$("name").value,context:$("ctx").value,goal:$("goal").value,cv:$("cv").value});
+ await fetch(WEBHOOK_START,{method:"POST",body});
+ const t0=Date.now();renderSteps(0);
+ while(Date.now()-t0<180000){
+  const s=Math.round((Date.now()-t0)/1000);$("timer").textContent=`Běží ${s} s`;
+  const k=Math.min(STEPS.length-1,Math.floor(s/12));renderSteps(k);setP((k+1)/(STEPS.length+1));
+  await sleep(6000);
+  try{const r=await fetch(WEBHOOK_RESULT+(WEBHOOK_RESULT.includes("?")?"&":"?")+"id="+encodeURIComponent(id));
+   const txt=await r.text();let d;try{d=JSON.parse(txt)}catch(e){continue}
+   if(typeof d.report==="string"){try{d=JSON.parse(d.report)}catch(e){continue}}
+   if(d&&d.claims)return d}catch(e){}
+ }
+ throw new Error("Výsledek nedorazil do 3 minut. Zkontrolujte, že jsou oba scénáře v Make zapnuté.");
+}
+
+$("form").onsubmit=async e=>{
+ e.preventDefault();$("run").disabled=true;$("report").classList.add("hide");$("err").classList.add("hide");
+ $("progress").classList.remove("hide");setP(0.05);renderSteps(0);$("timer").textContent=live?"":"Simulace, bez volání internetu";
+ try{
+  let r;if(live){r=await runLive()}else{await runDemo();r=MOCK;r=Object.assign({},MOCK,{summary:MOCK.summary.replace("Kandidátka Jana Nováková (fiktivní příklad)","Kandidát "+($("name").value||"(bez jména)")+" (DEMO, ukázková data)")})}
+  renderSteps(0,true);setP(1);show(r);
+ }catch(x){$("err").textContent=x.message||"Něco se pokazilo.";$("err").classList.remove("hide");setP(0)}
+ $("run").disabled=false;
+};
+</script>
+</body>
+</html>
