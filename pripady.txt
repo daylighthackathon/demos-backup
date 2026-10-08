@@ -1,0 +1,44 @@
+# Testovací případy pro Daylight (spouští se příkazem: python daylight_tools.py test 1)
+# Řádky začínající # se ignorují. Každý případ začíná řádkem "=== PRIPAD n ..." a má pole
+# JMENO, KONTEXT, CIL a po řádku "CV:" samotný text životopisu.
+# Řádky, kde stojí DOPLNIT, je nutné přepsat. Dokud tam DOPLNIT zůstane, skript případ nespustí.
+# Testujte jen na lidech, kteří souhlasili (nejlépe vy dva).
+
+=== PRIPAD 1: pravdive CV cloveka s verejnou stopou ===
+NAPOVEDA: Použijte skutečné CV někoho z vás dvou (nebo kamaráda se souhlasem), kdo má dohledatelný profil nebo web. Každé tvrzení v CV musí být pravdivé.
+JMENO: DOPLNIT jméno a příjmení
+KONTEXT: DOPLNIT firma nebo škola, město
+CIL: Ověř zkušenosti a vzdělání z CV
+CV:
+DOPLNIT celé CV jako prostý text, 5 až 10 tvrzení (zaměstnavatelé, pozice, roky, škola, dovednosti)
+
+=== PRIPAD 2: stejne CV, ale s jednim vymyslenym tvrzenim ===
+NAPOVEDA: Zkopírujte případ 1 a změňte jedno tvrzení na vymyšlené (například falešná firma). Do ground truth si poznamenejte, které to je.
+JMENO: DOPLNIT stejné jméno jako v případu 1
+KONTEXT: DOPLNIT stejný kontext jako v případu 1
+CIL: Ověř zkušenosti a vzdělání z CV
+CV:
+DOPLNIT CV z případu 1 s jedním vymyšleným tvrzením
+
+=== PRIPAD 3: fiktivni osoba (o ni internet nic nevi) ===
+NAPOVEDA: Hotový případ. Před použitím jméno i firmy rychle zagooglete, ať je výsledek opravdu prázdný. V ground truth je u všech tvrzení pravda = ne (osoba neexistuje).
+JMENO: Přemysl Vojtíšek-Karmazín
+KONTEXT: Orbitální kvantové služby s.r.o., Plzeň
+CIL: Ověř zkušenosti s Pythonem a vedením týmu
+CV:
+Přemysl Vojtíšek-Karmazín
+Senior Python vývojář a vedoucí týmu
+
+- 2020–2025 Orbitální kvantové služby s.r.o., Plzeň, vedoucí vývoje, vedl tým 6 lidí
+- 2016–2020 Zlatá Kaplička Software a.s., Python vývojář
+- Moravská akademie aplikované informatiky, absolvent 2015
+
+Dovednosti: Python, FastAPI, PostgreSQL, Docker
+
+=== PRIPAD 4: bonus, zamenitelne jmeno ===
+NAPOVEDA: Použijte běžné jméno, pod kterým internet najde víc různých lidí, a CV vymyšlené osoby. Agent nesmí splést osoby a identityConfidence má vyjít nízká. Dělejte až po případech 1 až 3.
+JMENO: DOPLNIT velmi běžné jméno (například Jan Novák)
+KONTEXT: DOPLNIT vymyšlená firma, město
+CIL: Ověř zkušenosti z CV
+CV:
+DOPLNIT krátké vymyšlené CV s 4 až 6 tvrzeními
