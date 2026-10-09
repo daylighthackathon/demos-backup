@@ -1,5 +1,5 @@
 # Daylight: every claim, in the light
-
+**FINAL REPOSITORY - https://github.com/daylighthackathon/daylighthackathon.github.io**
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 Daylight checks a CV against the public web. You give it a candidate's name and CV, and it returns a report that marks every claim as **verified**, **partial**, **contradicted** or **unverifiable**. Each verdict comes with a source URL and a word-for-word quote as evidence.
