@@ -1,0 +1,8 @@
+{
+  "name": "daylight-verifier",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "src/main.js",
+  "scripts": { "start": "node src/main.js" },
+  "dependencies": { "apify": "^3.2.0" }
+}
